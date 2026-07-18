@@ -361,6 +361,7 @@
     <!-- Application Logic -->
     <script type="module">
         import {
+            AutoTokenizer,
             AutoProcessor,
             AutoModelForCausalLM,
             AutoModelForVision2Seq,
@@ -526,7 +527,11 @@
                 const isVision = modelInfo.type.includes('Vision');
                 const ModelClass = isVision ? AutoModelForVision2Seq : AutoModelForCausalLM;
                 
-                processor = await AutoProcessor.from_pretrained(modelInfo.id);
+                if (isVision) {
+                    processor = await AutoProcessor.from_pretrained(modelInfo.id);
+                } else {
+                    processor = await AutoTokenizer.from_pretrained(modelInfo.id);
+                }
                 
                 const modelDtype = isVision 
                     ? { embed_tokens: "q4", vision_encoder: "fp16", decoder_model_merged: "q4" }
@@ -704,7 +709,8 @@
             
             try {
                 // Format prompt using tokenizer chat template
-                const prompt = processor.apply_chat_template(chatHistory, {
+                const tokenizer = processor.tokenizer || processor;
+                const prompt = tokenizer.apply_chat_template(chatHistory, {
                     add_generation_prompt: true,
                     tokenize: false
                 });
@@ -712,7 +718,7 @@
                 const inputs = await processor(prompt);
                 stoppingCriteria = new InterruptableStoppingCriteria();
                 
-                const streamer = new TextStreamer(processor.tokenizer, {
+                const streamer = new TextStreamer(tokenizer, {
                     skip_prompt: true,
                     callback_function: (token) => {
                         if (tokenCount === 0) {
