@@ -1,0 +1,31 @@
+name = "shenzirobot"   # ← نام جدید ورکر خود را اینجا بگذارید
+main = "src/index.js"
+compatibility_date = "2026-07-16"
+
+[[kv_namespaces]]
+binding = "CONVERSATION_KV"
+id = "5435306132444528adbd2f1796be5156"   # همان KV قبلی
+
+# کانفیگ و قفل اتمیک Durable Object (سازگار با پلان رایگان کلادفلر)
+[[durable_objects.bindings]]
+name = "DEDUP_LOCK"
+class_name = "DedupLock"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["DedupLock"]
+
+[observability]
+enabled = true
+head_sampling_rate = 1
+
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+persist = true
+invocation_logs = true
+
+[observability.traces]
+enabled = true
+persist = true
+head_sampling_rate = 1
